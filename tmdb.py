@@ -1,37 +1,30 @@
-#!/usr/bin/env python2.5
-#encoding:utf-8
-#author:dbr/Ben
-#contributors: by ccjensen/Chris
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+#author:doganaydin /// forked from dbr/Ben
 #project:themoviedb
-#repository:http://github.com/dbr/tvdb_api
+#repository:http://github.com/doganaydin/themoviedb
 #license: LGPLv2 http://www.gnu.org/licenses/lgpl.html
 
-"""An interface to the themoviedb.org API
-"""
+"""An interface to the themoviedb.org API"""
 
-__author__ = "dbr/Ben"
-__version__ = "0.2b"
+__author__ = "doganaydin"
+__version__ = "0.1"
 
 config = {}
-config['apikey'] = "a8b9f96dde091408a03cb4c78477bd14"
-
+config['apikey'] = "3e7807c4a01f18298f64662b257d7059"
 config['urls'] = {}
 config['urls']['movie.search'] = "http://api.themoviedb.org/2.1/Movie.search/en/xml/%(apikey)s/%%s" % (config)
 config['urls']['movie.getInfo'] = "http://api.themoviedb.org/2.1/Movie.getInfo/en/xml/%(apikey)s/%%s" % (config)
 config['urls']['media.getInfo'] = "http://api.themoviedb.org/2.1/Media.getInfo/en/xml/%(apikey)s/%%s/%%s" % (config)
 
-
 import os
 import struct
 import urllib
 import urllib2
-
 import xml.etree.cElementTree as ElementTree
-
 
 class TmdBaseError(Exception):
     pass
-
 
 class TmdNoResults(TmdBaseError):
     pass
@@ -39,17 +32,13 @@ class TmdNoResults(TmdBaseError):
 class TmdHttpError(TmdBaseError):
     pass
 
-
 class TmdXmlError(TmdBaseError):
     pass
 
-
 def opensubtitleHashFile(name):
     """Hashes a file using OpenSubtitle's method.
-
     > In natural language it calculates: size + 64bit chksum of the first and
     > last 64k (even if they overlap because the file is smaller than 128k).
-
     A slightly more Pythonic version of the Python solution on..
     http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
     """
@@ -81,11 +70,8 @@ def opensubtitleHashFile(name):
     f.close()
     return  "%016x" % fhash
 
-
 class XmlHandler:
-    """Deals with retrieval of XML files from API
-    """
-
+    """Deals with retrieval of XML files from API"""
     def __init__(self, url):
         self.url = url
 
@@ -108,17 +94,12 @@ class XmlHandler:
 
 
 class SearchResults(list):
-    """Stores a list of Movie's that matched the search
-    """
-
+    """Stores a list of Movie's that matched the search"""
     def __repr__(self):
         return "<Search results: %s>" % (list.__repr__(self))
 
-
 class MovieResult(dict):
-    """A dict containing the information about a specific search result
-    """
-
+    """A dict containing the information about a specific search result"""
     def __repr__(self):
         return "<MovieResult: %s (%s)>" % (self.get("name"), self.get("released"))
 
@@ -131,24 +112,17 @@ class MovieResult(dict):
         return info
 
 class Movie(dict):
-    """A dict containing the information about the film
-    """
-
+    """A dict containing the information about the film"""
     def __repr__(self):
         return "<MovieResult: %s (%s)>" % (self.get("name"), self.get("released"))
 
-
 class Categories(dict):
-    """Stores category information
-    """
-
+    """Stores category information"""
     def set(self, category_et):
         """Takes an elementtree Element ('category') and stores the url,
         using the type and name as the dict key.
-
         For example:
        <category type="genre" url="http://themoviedb.org/encyclopedia/category/80" name="Crime"/>
-
         ..becomes:
         categories['genre']['Crime'] = 'http://themoviedb.org/encyclopedia/category/80'
         """
@@ -158,18 +132,13 @@ class Categories(dict):
         self.setdefault(_type, {})[name] = url
         self[_type][name] = url
 
-
 class Studios(dict):
-    """Stores category information
-    """
-
+    """Stores category information"""
     def set(self, studio_et):
         """Takes an elementtree Element ('studio') and stores the url,
         using the name as the dict key.
-
         For example:
        <studio url="http://www.themoviedb.org/encyclopedia/company/20" name="Miramax Films"/>
-
         ..becomes:
         studios['name'] = 'http://www.themoviedb.org/encyclopedia/company/20'
         """
@@ -177,18 +146,13 @@ class Studios(dict):
         url = studio_et.get("url")
         self[name] = url
 
-
 class Countries(dict):
-    """Stores country information
-    """
-
+    """Stores country information"""
     def set(self, country_et):
         """Takes an elementtree Element ('country') and stores the url,
         using the name and code as the dict key.
-
         For example:
        <country url="http://www.themoviedb.org/encyclopedia/country/223" name="United States of America" code="US"/>
-
         ..becomes:
         countries['code']['name'] = 'http://www.themoviedb.org/encyclopedia/country/223'
         """
@@ -197,12 +161,10 @@ class Countries(dict):
         url = country_et.get("url")
         self.setdefault(code, {})[name] = url
 
-
 class Image(dict):
     """Stores image information for a single poster/backdrop (includes
     multiple sizes)
     """
-
     def __init__(self, _id, _type, size, url):
         self['id'] = _id
         self['type'] = _type
@@ -215,21 +177,15 @@ class Image(dict):
     def __repr__(self):
         return "<Image (%s for ID %s)>" % (self['type'], self['id'])
 
-
 class ImagesList(list):
-    """Stores a list of Images, and functions to filter "only posters" etc
-    """
-
+    """Stores a list of Images, and functions to filter "only posters" etc"""
     def set(self, image_et):
         """Takes an elementtree Element ('image') and stores the url,
         along with the type, id and size.
-
         Is a list containing each image as a dictionary (which includes the
         various sizes)
-
         For example:
         <image type="poster" size="original" url="http://images.themoviedb.org/posters/4181/67926_sin-city-02-color_122_207lo.jpg" id="4181"/>
-
         ..becomes:
         images[0] = {'id':4181', 'type': 'poster', 'original': 'http://images.themov...'}
         """
@@ -237,7 +193,6 @@ class ImagesList(list):
         _id = image_et.get("id")
         size = image_et.get("size")
         url = image_et.get("url")
-
         cur = self.find_by('id', _id)
         if len(cur) == 0:
             nimg = Image(_id = _id, _type = _type, size = size, url = url)
@@ -262,31 +217,24 @@ class ImagesList(list):
     def backdrops(self):
         return self.find_by('type', 'backdrop')
 
-
 class CrewRoleList(dict):
     """Stores a list of roles, such as director, actor etc
-
     >>> import tmdb
     >>> tmdb.getMovieInfo(550)['cast'].keys()[:5]
     ['casting', 'producer', 'author', 'sound editor', 'actor']
     """
     pass
 
-
 class CrewList(list):
     """Stores list of crew in specific role
-
     >>> import tmdb
     >>> tmdb.getMovieInfo(550)['cast']['author']
     [<author (id 7468): Chuck Palahniuk>, <author (id 7469): Jim Uhls>]
     """
     pass
 
-
 class Person(dict):
-    """Stores information about a specific member of cast
-    """
-
+    """Stores information about a specific member of cast"""
     def __init__(self, job, _id, name, character, url):
         self['job'] = job
         self['id'] = _id
@@ -300,14 +248,11 @@ class Person(dict):
         else:
             return "<%(job)s (id %(id)s): %(name)s (as %(character)s)>" % self
 
-
 class MovieDb:
     """Main interface to www.themoviedb.com
-
     The search() method searches for the film by title.
     The getMovieInfo() method retrieves information about a specific movie using themoviedb id.
     """
-
     def _parseSearchResults(self, movie_element):
         cur_movie = MovieResult()
         cur_images = ImagesList()
@@ -384,7 +329,6 @@ class MovieDb:
 
         if len(moviesTree) == 0:
             raise TmdNoResults("No results for id %s" % id)
-
         return self._parseMovie(moviesTree[0])
 
     def mediaGetInfo(self, hash, size):
@@ -396,31 +340,77 @@ class MovieDb:
         moviesTree = etree.find("movies").findall("movie")
         if len(moviesTree) == 0:
             raise TmdNoResults("No results for hash %s" % hash)
-
         return [self._parseMovie(x) for x in moviesTree]
-
+# Shortcuts for search method
+# using:
+#   movie = tmdb.tmdb("Sin City")
+#   print movie.getRating -> 7.0
+class tmdb:
+    def __init__(self,name,result=0):
+        # get first movie if result=0
+        """Convenience wrapper for MovieDb.search - so you can do..
+        >>> import tmdb
+        >>> movie = tmdb.tmdb("Fight Club")
+        >>> ranking = movie.getRanking() or votes = movie.getVotes()
+        <Search results: [<MovieResult: Fight Club (1999-09-16)>]>
+        """
+        mdb = MovieDb()
+        self.movie = mdb.search(name)[int(result)]
+    def getRating(self):
+        return self.movie["rating"]
+    def getVotes(self):
+        return self.movie["votes"]    
+    def getName(self):
+        return self.movie["name"]    
+    def getLanguage(self):
+        return self.movie["language"]  
+    def getCertification(self):
+        return self.movie["certification"]
+    def getUrl(self):
+        return self.movie["url"]    
+    def getOverview(self):
+        return self.movie["overview"]     
+    def getPopularity(self):
+        return self.movie["popularity"]    
+    def getOriginalName(self):
+        return self.movie["original_name"]    
+    def getLastModified(self):
+        return self.movie["last_modified_at"]    
+    def getImdbId(self):
+        return self.movie["imdb_id"]    
+    def getReleased(self):
+        return self.movie["released"]    
+    def getScore(self):
+        return self.movie["score"]    
+    def getAdult(self):
+        return self.movie["adult"]    
+    def getVersion(self):
+        return self.movie["version"]    
+    def getTranslated(self):
+        return self.movie["translated"]
+    def getType(self):
+        return self.movie["type"]    
+    def getId(self):
+        return self.movie["id"]
+    def getAlternativeName(self):
+        return self.movie["alternative_name"]    
 
 def search(name):
     """Convenience wrapper for MovieDb.search - so you can do..
-
     >>> import tmdb
     >>> tmdb.search("Fight Club")
     <Search results: [<MovieResult: Fight Club (1999-09-16)>]>
     """
     mdb = MovieDb()
     return mdb.search(name)
-
-
 def getMovieInfo(id):
     """Convenience wrapper for MovieDb.search - so you can do..
-
     >>> import tmdb
     >>> tmdb.getMovieInfo(187)
     <MovieResult: Sin City (2005-04-01)>
     """
     mdb = MovieDb()
     return mdb.getMovieInfo(id)
-
 
 def mediaGetInfo(hash, size):
     """Convenience wrapper for MovieDb.mediaGetInfo - so you can do..
@@ -432,12 +422,10 @@ def mediaGetInfo(hash, size):
     mdb = MovieDb()
     return mdb.mediaGetInfo(hash, size)
 
-
 def searchByHashingFile(filename):
     """Searches for the specified file using the OpenSubtitle hashing method
     """
     return mediaGetInfo(opensubtitleHashFile(filename), os.path.size(filename))
-
 
 def main():
     results = search("Fight Club")
@@ -451,7 +439,6 @@ def main():
     print movie['images']
     for genreName in movie['categories']['genre']:
         print "%s (%s)" % (genreName, movie['categories']['genre'][genreName])
-
 
 if __name__ == '__main__':
     main()
