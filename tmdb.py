@@ -16,6 +16,7 @@ config['urls'] = {}
 config['urls']['movie.search'] = "http://api.themoviedb.org/2.1/Movie.search/en/xml/%(apikey)s/%%s" % (config)
 config['urls']['movie.getInfo'] = "http://api.themoviedb.org/2.1/Movie.getInfo/en/xml/%(apikey)s/%%s" % (config)
 config['urls']['media.getInfo'] = "http://api.themoviedb.org/2.1/Media.getInfo/en/xml/%(apikey)s/%%s/%%s" % (config)
+config['urls']['imdb.lookUp'] = "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/%(apikey)s/%%s" % (config)
 
 import os
 import struct
@@ -305,7 +306,7 @@ class MovieDb:
         cur_movie['images'] = cur_images
         cur_movie['cast'] = cur_cast
         return cur_movie
-
+        
     def search(self, title):
         """Searches for a film by its title.
         Returns SearchResults (a list) containing all matches (Movie instances)
@@ -318,7 +319,7 @@ class MovieDb:
             cur_movie = self._parseSearchResults(cur_result)
             search_results.append(cur_movie)
         return search_results
-
+    
     def getMovieInfo(self, id):
         """Returns movie info by it's TheMovieDb ID.
         Returns a Movie instance
@@ -341,7 +342,21 @@ class MovieDb:
         if len(moviesTree) == 0:
             raise TmdNoResults("No results for hash %s" % hash)
         return [self._parseMovie(x) for x in moviesTree]
-# Shortcuts for search method
+        
+    def imdbLookup(self,id=0,title=False):
+        if id > 0:
+            url = config['urls']['imdb.lookUp'] % (id)
+        else:
+            _imdb_id = self.search(title)[0]["imdb_id"]
+            url = config['urls']['imdb.lookUp'] % (_imdb_id)
+        etree = XmlHandler(url).getEt()
+        lookup_results = SearchResults()
+        for cur_lookup in etree.find("movies").findall("movie"):
+            cur_movie = self._parseSearchResults(cur_lookup)
+            lookup_results.append(cur_movie)
+        return lookup_results
+  
+# Shortcuts for tmdb search method
 # using:
 #   movie = tmdb.tmdb("Sin City")
 #   print movie.getRating -> 7.0
@@ -393,8 +408,82 @@ class tmdb:
     def getId(self):
         return self.movie["id"]
     def getAlternativeName(self):
-        return self.movie["alternative_name"]    
-
+        return self.movie["alternative_name"] 
+        
+# Shortcuts for imdb lookup method
+# using:
+#   movie = tmdb.imdb("Sin City")
+#   print movie.getRating -> 7.0         
+class imdb:
+    def __init__(self,id=0,title=False,result=0):
+        # get first movie if result=0
+        """Convenience wrapper for MovieDb.search - so you can do..
+        >>> import tmdb
+        >>> movie = tmdb.imdb(title="Fight Club") # or movie = tmdb.imdb(id=imdb_id)
+        >>> ranking = movie.getRanking() or votes = movie.getVotes()
+        <Search results: [<MovieResult: Fight Club (1999-09-16)>]>
+        """
+        self.id=id
+        self.title=title
+        self.mdb = MovieDb()
+        self.movie = self.mdb.imdbLookup(self.id,self.title)[int(result)]
+    def getRuntime(self):
+        return self.movie["runtime"]
+    def getCategories(self):
+        from xml.dom.minidom import parse
+        adres = config['urls']['imdb.lookUp'] % self.getImdbId()
+        d = parse(urllib2.urlopen(adres))
+        s = d.getElementsByTagName("categories")
+        ds = []
+        for i in range(len(s[0].childNodes)):
+            if i % 2 > 0:
+                ds.append(s[0].childNodes[i].getAttribute("name"))
+        return ds
+    def getRating(self):
+        return self.movie["rating"]
+    def getVotes(self):
+        return self.movie["votes"]    
+    def getName(self):
+        return self.movie["name"]    
+    def getLanguage(self):
+        return self.movie["language"]  
+    def getCertification(self):
+        return self.movie["certification"]
+    def getUrl(self):
+        return self.movie["url"]    
+    def getOverview(self):
+        return self.movie["overview"]     
+    def getPopularity(self):
+        return self.movie["popularity"]    
+    def getOriginalName(self):
+        return self.movie["original_name"]    
+    def getLastModified(self):
+        return self.movie["last_modified_at"]    
+    def getImdbId(self):
+        return self.movie["imdb_id"]    
+    def getReleased(self):
+        return self.movie["released"]    
+    def getAdult(self):
+        return self.movie["adult"]    
+    def getVersion(self):
+        return self.movie["version"]    
+    def getTranslated(self):
+        return self.movie["translated"]
+    def getType(self):
+        return self.movie["type"]    
+    def getId(self):
+        return self.movie["id"]
+    def getAlternativeName(self):
+        return self.movie["alternative_name"]
+             
+def imdbLookup(id=0,title=False):
+    """Convenience wrapper for Imdb.Lookup - so you can do..
+    >>> import tmdb
+    >>> tmdb.imdbLookup("Fight Club")
+    <Search results: [<MovieResult: Fight Club (1999-09-16)>]>
+    """
+    mdb = MovieDb()
+    return mdb.imdbLookup(id,title)
 def search(name):
     """Convenience wrapper for MovieDb.search - so you can do..
     >>> import tmdb
