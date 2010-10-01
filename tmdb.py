@@ -8,7 +8,7 @@
 """An interface to the themoviedb.org API"""
 
 __author__ = "doganaydin"
-__version__ = "0.1"
+__version__ = "0.2"
 
 config = {}
 config['apikey'] = "3e7807c4a01f18298f64662b257d7059"
