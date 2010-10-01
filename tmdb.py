@@ -18,24 +18,16 @@ config['urls']['movie.getInfo'] = "http://api.themoviedb.org/2.1/Movie.getInfo/e
 config['urls']['media.getInfo'] = "http://api.themoviedb.org/2.1/Media.getInfo/en/xml/%(apikey)s/%%s/%%s" % (config)
 config['urls']['imdb.lookUp'] = "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/%(apikey)s/%%s" % (config)
 
-import os
-import struct
-import urllib
-import urllib2
-import xml.etree.cElementTree as ElementTree
+import os,struct,urllib,urllib2,xml.etree.cElementTree as ElementTree
 
 class TmdBaseError(Exception):
     pass
-
 class TmdNoResults(TmdBaseError):
     pass
-
 class TmdHttpError(TmdBaseError):
     pass
-
 class TmdXmlError(TmdBaseError):
     pass
-
 def opensubtitleHashFile(name):
     """Hashes a file using OpenSubtitle's method.
     > In natural language it calculates: size + 64bit chksum of the first and
@@ -59,7 +51,6 @@ def opensubtitleHashFile(name):
         (l_value,)= struct.unpack(longlongformat, buf)
         fhash += l_value
         fhash = fhash & 0xFFFFFFFFFFFFFFFF # to remain as 64bit number
-
 
     f.seek(max(0,filesize-65536),0)
     for x in range(65536/bytesize):
@@ -92,7 +83,6 @@ class XmlHandler:
         except SyntaxError, errormsg:
             raise TmdXmlError(errormsg)
         return et
-
 
 class SearchResults(list):
     """Stores a list of Movie's that matched the search"""
