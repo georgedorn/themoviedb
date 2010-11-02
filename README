@@ -34,7 +34,9 @@ tmdb.tmdb methods:
     > getType()   
     > getId()
     > getAlternativeName()
- 
+    > getPoster()
+    > getBackdrop()
+
 tmdb.imdb methods
     > getRuntime()
     > getCategories()
@@ -56,3 +58,5 @@ tmdb.imdb methods
     > getType()
     > getId()
     > getAlternativeName()
+    > getPoster()
+    > getBackdrop()
