@@ -430,7 +430,7 @@ class imdb:
         self.mdb = MovieDb()
         self.movie = self.mdb.imdbLookup(self.id,self.title)
     def getRuntime(self,i):
-        return self.movie["runtime"]
+        return self.movie[i]["runtime"]
     def getCategories(self):
         from xml.dom.minidom import parse
         adres = config['urls']['imdb.lookUp'] % self.getImdbId()
