@@ -11,7 +11,7 @@ __author__ = "doganaydin"
 __version__ = "0.5"
 
 config = {}
-config['apikey'] = "YOUR_API_KEY" # Thanks BeeKeeper
+config['apikey'] = "3e7807c4a01f18298f64662b257d7059" # Thanks BeeKeeper
 config['urls'] = {}
 config['urls']['movie.search'] = "http://api.themoviedb.org/2.1/Movie.search/en/xml/%(apikey)s/%%s" % (config)
 config['urls']['movie.getInfo'] = "http://api.themoviedb.org/2.1/Movie.getInfo/en/xml/%(apikey)s/%%s" % (config)
@@ -348,7 +348,7 @@ class MovieDb:
         return lookup_results
         
 class Browse:
-    def __init__(self,params):
+    def __init__(self,params={}):
         """
             tmdb.Browse(params)
             default params = {"order_by":"release","order":"desc"}
