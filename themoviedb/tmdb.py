@@ -8,7 +8,7 @@
 """An interface to the themoviedb.org API"""
 
 __author__ = "doganaydin"
-__version__ = "0.2"
+__version__ = "0.5"
 
 config = {}
 config['apikey'] = "YOUR_API_KEY" # Thanks BeeKeeper
@@ -17,6 +17,7 @@ config['urls']['movie.search'] = "http://api.themoviedb.org/2.1/Movie.search/en/
 config['urls']['movie.getInfo'] = "http://api.themoviedb.org/2.1/Movie.getInfo/en/xml/%(apikey)s/%%s" % (config)
 config['urls']['media.getInfo'] = "http://api.themoviedb.org/2.1/Media.getInfo/en/xml/%(apikey)s/%%s/%%s" % (config)
 config['urls']['imdb.lookUp'] = "http://api.themoviedb.org/2.1/Movie.imdbLookup/en/xml/%(apikey)s/%%s" % (config)
+config['urls']['movie.browse'] = "http://api.themoviedb.org/2.1/Movie.browse/en-US/xml/%(apikey)s?%%s" % (config)
 
 import os,struct,urllib,urllib2,xml.etree.cElementTree as ElementTree
 
@@ -345,7 +346,97 @@ class MovieDb:
             cur_movie = self._parseSearchResults(cur_lookup)
             lookup_results.append(cur_movie)
         return lookup_results
-  
+        
+class Browse:
+    def __init__(self,params):
+        """
+            tmdb.Browse(params)
+            default params = {"order_by":"release","order":"desc"}
+            params = {"query":"some query","release_max":"1991",...}
+            all posible parameters = http://api.themoviedb.org/2.1/methods/Movie.browse    
+        """
+        if "order_by" not in params:
+            params.update({"order_by":"release"})
+        if "order" not in params:
+            params.update({"order":"desc"})
+                                
+        self.params = urllib.urlencode(params)
+        self.movie = self.look(self.params)
+    def look(self,look_for):
+        url = config['urls']['movie.browse'] % (look_for)
+        etree = XmlHandler(url).getEt()
+        look_results = SearchResults()
+        for cur_lookup in etree.find("movies").findall("movie"):
+            cur_movie = self._parseSearchResults(cur_lookup)
+            look_results.append(cur_movie)
+        return look_results
+        
+    def _parseSearchResults(self, movie_element):
+        cur_movie = MovieResult()
+        cur_images = ImagesList()
+        for item in movie_element.getchildren():
+                if item.tag.lower() == "images":
+                    for subitem in item.getchildren():
+                        cur_images.set(subitem)
+                else:
+                    cur_movie[item.tag] = item.text
+        cur_movie['images'] = cur_images
+        return cur_movie    
+        
+    def getRating(self,i):
+        return self.movie[i]["rating"]
+    def getVotes(self,i):
+        return self.movie[i]["votes"]    
+    def getName(self,i):
+        return self.movie[i]["name"]    
+    def getLanguage(self,i):
+        return self.movie[i]["language"]  
+    def getCertification(self,i):
+        return self.movie[i]["certification"]
+    def getUrl(self,i):
+        return self.movie[i]["url"]    
+    def getOverview(self,i):
+        return self.movie[i]["overview"]     
+    def getPopularity(self,i):
+        return self.movie[i]["popularity"]    
+    def getOriginalName(self,i):
+        return self.movie[i]["original_name"]    
+    def getLastModified(self,i):
+        return self.movie[i]["last_modified_at"]    
+    def getImdbId(self,i):
+        return self.movie[i]["imdb_id"]    
+    def getReleased(self,i):
+        return self.movie[i]["released"]    
+    def getScore(self,i):
+        return self.movie[i]["score"]    
+    def getAdult(self,i):
+        return self.movie[i]["adult"]    
+    def getVersion(self,i):
+        return self.movie[i]["version"]    
+    def getTranslated(self,i):
+        return self.movie[i]["translated"]
+    def getType(self,i):
+        return self.movie[i]["type"]    
+    def getId(self,i):
+        return self.movie[i]["id"]
+    def getAlternativeName(self,i):
+        return self.movie[i]["alternative_name"] 
+    def getPoster(self,i,size):
+        if size == "thumb" or size == "t":
+            return self.movie[i]["images"][0]["thumb"]
+        elif size == "cover" or size == "c":
+            return self.movie[i]["images"][0]["cover"]
+        else:
+            return self.movie[i]["images"][0]["mid"]
+
+    def getBackdrop(self,i,size):
+        if size == "poster" or size == "p":
+            return self.movie[i]["images"][1]["poster"]
+        else:
+            return self.movie[i]["images"][1]["thumb"]        
+        
+     
+                  
 # Shortcuts for tmdb search method
 # using:
 #   movie = tmdb.tmdb("Sin City")
