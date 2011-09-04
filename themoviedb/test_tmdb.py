@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.5
+#!/usr/bin/env python
 #encoding:utf-8
 #author:dbr/Ben
 #project:themoviedb
