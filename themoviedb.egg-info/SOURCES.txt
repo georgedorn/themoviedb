@@ -1,9 +1,0 @@
-README
-setup.py
-themoviedb/__init__.py
-themoviedb/test_tmdb.py
-themoviedb/tmdb.py
-themoviedb.egg-info/PKG-INFO
-themoviedb.egg-info/SOURCES.txt
-themoviedb.egg-info/dependency_links.txt
-themoviedb.egg-info/top_level.txt
