@@ -1,3 +1,5 @@
+tmdb.py for py3
+
 #TODO: Add redis and memcached support
 
 install : python setup.py install 
