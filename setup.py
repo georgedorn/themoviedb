@@ -3,8 +3,8 @@
 
 from distutils import core
 core.setup(
-    name = "themoviedb",
-    packages = ["themoviedb"],
+    name = "tmdb",
+    packages = ["."],
     version = "1.0.0",
     description = "themoviedb.org python wrapper",
     author = "Doğan Aydın",
