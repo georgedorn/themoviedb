@@ -1,5 +1,5 @@
-from setuptools import setup
+import distutils.core
 
-setup(name='themoviedb',
-      packages=['themoviedb']
-)
+distutils.core.setup(
+    name="tmdb",
+    packages = ["."])
