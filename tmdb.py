@@ -450,7 +450,7 @@ class tmdb:
         <Search results: [<MovieResult: Fight Club (1999-09-16)>]>
         """
         mdb = MovieDb()
-        self.movie = mdb.search(name)[int(result)]
+        self.movie = mdb.search(name)
     def getRating(self,i):
         return self.movie[i]["rating"]
     def getVotes(self,i):
