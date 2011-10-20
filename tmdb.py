@@ -382,7 +382,9 @@ class Browse:
                     cur_movie[item.tag] = item.text
         cur_movie['images'] = cur_images
         return cur_movie    
-        
+    
+    def getTotal(self):
+        return len(self.movie)
     def getRating(self,i):
         return self.movie[i]["rating"]
     def getVotes(self,i):
@@ -451,6 +453,9 @@ class tmdb:
         """
         mdb = MovieDb()
         self.movie = mdb.search(name)
+        
+    def getTotal(self):
+        return len(self.movie)
     def getRating(self,i):
         return self.movie[i]["rating"]
     def getVotes(self,i):
@@ -520,6 +525,8 @@ class imdb:
         self.title=title
         self.mdb = MovieDb()
         self.movie = self.mdb.imdbLookup(self.id,self.title)
+    def getTotal(self):
+        return len(self.movie)
     def getRuntime(self,i):
         return self.movie[i]["runtime"]
     def getCategories(self):
